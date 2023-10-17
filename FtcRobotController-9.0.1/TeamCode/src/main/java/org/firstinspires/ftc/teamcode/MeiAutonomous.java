@@ -1,19 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.Blinker;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.Gyroscope;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="Small Pole on Right")
 
-public class autonomous extends LinearOpMode {
+public class MeiAutonomous extends LinearOpMode {
     //declare hardware variables
     public DcMotor frontLeft;
     public DcMotor frontRight;
@@ -24,7 +19,7 @@ public class autonomous extends LinearOpMode {
     public Servo clawRight;
     public Gyroscope imu;
     
-    //delcare common variables
+    //declare common variables
     public int pauseTime = 200; //pause between each movement
     public double slideAloft = -.1; //power needed for slide to be held up
     public double slideIncrement = .1; //how fast the slide goes up or down

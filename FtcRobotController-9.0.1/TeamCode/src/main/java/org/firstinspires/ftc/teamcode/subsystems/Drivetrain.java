@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gyroscope;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
-//Sun by Sunny
+//Sun by Sunny_19_19
 
 public class Drivetrain {
 
@@ -16,7 +16,7 @@ public class Drivetrain {
     private Gyroscope imu;
 
     private final double wheelRadius = 37.5;
-    private final int gearboxRatioTicks = 1120;
+    private final int gearboxRatioTicks = 560;
     //TODO Change the gearboxRatio
 
     /* The mechanum wheels are 75mm in diameter (37.5mm Radius)
@@ -39,7 +39,6 @@ public class Drivetrain {
         backRight = hardwareMap.get(DcMotor.class, "backRight");
         imu = hardwareMap.get(Gyroscope.class, "imu");
 
-        //TODO: May need to be changed if the current wheel layout doesn't match last year's
         backLeft.setDirection(DcMotor.Direction.FORWARD);
         frontLeft.setDirection(DcMotor.Direction.FORWARD);
         frontRight.setDirection(DcMotor.Direction.REVERSE);
@@ -48,7 +47,7 @@ public class Drivetrain {
         //TODO @HIGHLIGHT
         /* ZeroPowerBehavior can be: BRAKE, FLOAT, HOLD
          * This behavior is applied when {motor}.setPower(0);
-         * BRAKE: Stops the motor in the current position and doesn't allow to move.
+         * BRAKE: Stops the motor in the current position and doesn't allow movement.
          * FLOAT: Stops the motor but doesn't apply resistance and the motor moves freely.
          * HOLD : Stops the motor but actively applies power to hold in that position.*/
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -57,6 +56,12 @@ public class Drivetrain {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
+
+    //Todo List
+    //-Test in real life
+    //-Add a method to wait until the robot has finished current command
+    //-Fix method addToCurrentPosition() || IDK if it works as expected
+    //-Add telemetry integration
 
     public void drive(double distance, double power){
         //Takes distance in Millimeters
@@ -97,22 +102,30 @@ public class Drivetrain {
 
     public void stopAndBrake(){
         //This activates zeroPowerBehavior
-        //Read Constructor for more info
+        //Read Constructor note for more info
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
     }
 
+    public boolean isAnyMotorBusy(){
+        if(frontRight.isBusy() || frontLeft.isBusy() ||
+           backRight.isBusy()  || backLeft.isBusy()){
+            return true;
+        }
+        return false;
+    }
+
     private double ticksToMillis(int ticks) {
-        // I made this method but currently has now uses
-        // This may come in handy later tho
-        return ((double)ticks/gearboxRatioTicks) * (2 * Math.PI * 37.5);
+        // I made this method but currently has no uses.
+        // It may come in handy later tho
+        return ((double)ticks/gearboxRatioTicks) * (2 * Math.PI * wheelRadius);
     }
 
     private int millisToTicks(double millis){
         // Use this method when setting motor's TargetPosition
-        return (int)((millis/(2 * Math.PI * 37.5)) * gearboxRatioTicks);
+        return (int)((millis/(2 * Math.PI * wheelRadius)) * gearboxRatioTicks);
     }
 
     private void setAllMotorsPower(double power){
@@ -122,6 +135,8 @@ public class Drivetrain {
         backRight.setPower(power);
     }
 
-
-    
+    private void addToTargetPosition(DcMotor motor, int ticks){
+        int currentReading = motor.getCurrentPosition();
+        motor.setTargetPosition(currentReading + ticks);
+    }
 }

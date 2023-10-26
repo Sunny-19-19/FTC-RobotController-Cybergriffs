@@ -1,10 +1,8 @@
-//Im starting to believe that Java is ignoring my comments
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
-import org.firstinspires.ftc.teamcode.subsystems.CustomTelemetry;
+import org.firstinspires.ftc.teamcode.subsystems.TelemetryClock;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 
 @Autonomous(name= "AutonBySunny")
@@ -12,25 +10,27 @@ import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 public class SunnyAutonomous extends LinearOpMode{
 
     Drivetrain drivetrain;
+    TelemetryClock telemetryClock;
+    Thread telemetryThread;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode(){
 
         drivetrain = new Drivetrain(hardwareMap);
         drivetrain.stopAndBrake();
 
-
-
-        /* EXPERIMENTAL: Independent Telemetry Updater
-        CustomTelemetry customTelemetry = new CustomTelemetry(this.telemetry);
-        Thread telemetryThread = new Thread(customTelemetry);
+        //Experimental -->
+        telemetryClock = new TelemetryClock(this.telemetry, this.drivetrain);
+        telemetryThread = new Thread(telemetryClock);
         telemetryThread.start();
-         */
+        //Experimental <--
+
+        telemetry.addData("Status: ", "Everything Ok");
+        telemetry.update();
 
         waitForStart();
 
         while(opModeIsActive()){
-            //TODO Test in real world. Use ruler to measure distances precision
             drivetrain.drive(1000, 0.5);
             sleep(5000);
             drivetrain.stopAndBrake();

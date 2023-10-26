@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gyroscope;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
-//Sun by Sunny_19_19
 
 public class Drivetrain {
 
@@ -17,7 +16,6 @@ public class Drivetrain {
 
     private final double wheelRadius = 37.5;
     private final int gearboxRatioTicks = 560;
-    //TODO Change the gearboxRatio
 
     /* The mechanum wheels are 75mm in diameter (37.5mm Radius)
      * The total ArcLength is ~235.619mm ( 2 * PI * 37.5)
@@ -44,9 +42,8 @@ public class Drivetrain {
         frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        //TODO @HIGHLIGHT
         /* ZeroPowerBehavior can be: BRAKE, FLOAT, HOLD
-         * This behavior is applied when {motor}.setPower(0);
+         * This behavior is applied when [DcMotor].setPower(0);
          * BRAKE: Stops the motor in the current position and doesn't allow movement.
          * FLOAT: Stops the motor but doesn't apply resistance and the motor moves freely.
          * HOLD : Stops the motor but actively applies power to hold in that position.*/
@@ -55,58 +52,60 @@ public class Drivetrain {
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        resetAllEncoders(); //Just in case the encoder's reading is not at zero
     }
 
-    //Todo List
-    //-Test in real life
-    //-Add a method to wait until the robot has finished current command
-    //-Fix method addToCurrentPosition() || IDK if it works as expected
-    //-Add telemetry integration
-
     public void drive(double distance, double power){
-        //Takes distance in Millimeters
-        //Takes power in range -1 to 1
         int ticks = millisToTicks(distance);
 
-        setAllMotorsPower(Range.clip(power, -1, 1));
-        frontLeft.setTargetPosition(ticks);
-        frontRight.setTargetPosition(ticks);
-        backLeft.setTargetPosition(ticks);
-        backRight.setTargetPosition(ticks);
+        setPowerForAllMotors(Range.clip(power, -1, 1));
+        addToTargetPosition(frontLeft, ticks);
+        addToTargetPosition(frontRight, ticks);
+        addToTargetPosition(backLeft, ticks);
+        addToTargetPosition(backRight, ticks);
     }
 
     public void strafe(double distance, double power){
-        //Takes distance in Millimeters
-        //Takes power in range -1 to 1
-        int ticks = millisToTicks(distance);
 
-        setAllMotorsPower(Range.clip(power, -1, 1));
-        frontLeft.setTargetPosition(ticks);
-        frontRight.setTargetPosition(-ticks);
-        backLeft.setTargetPosition(ticks);
-        backRight.setTargetPosition(-ticks);
+        int ticks = millisToTicks(distance);
+        setPowerForAllMotors(Range.clip(power, -1, 1));
+        addToTargetPosition(frontLeft, ticks);
+        addToTargetPosition(frontRight, -ticks);
+        addToTargetPosition(backLeft, ticks);
+        addToTargetPosition(backRight, -ticks);
     }
 
     public void turn(double angle, double power){
-        //Takes angle in Degrees || Then converts to Radians
-        //Takes power in range -1 to 1
+
         double arcLength = Math.toRadians(angle) * wheelRadius;
         int ticks = millisToTicks(arcLength);
 
-        setAllMotorsPower(Range.clip(power, -1, 1));
-        frontLeft.setTargetPosition(ticks);
-        frontRight.setTargetPosition(ticks);
-        backLeft.setTargetPosition(-ticks);
-        backRight.setTargetPosition(-ticks);
-    }
+        setPowerForAllMotors(Range.clip(power, -1, 1));
+        addToTargetPosition(frontLeft, ticks);
+        addToTargetPosition(frontRight, ticks);
+        addToTargetPosition(backLeft, -ticks);
+        addToTargetPosition(backRight, -ticks);
 
+    }
     public void stopAndBrake(){
-        //This activates zeroPowerBehavior
-        //Read Constructor note for more info
+        //This activates the zeroPowerBehavior
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
+    }
+
+    public void resetAllEncoders(){
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
 
     public boolean isAnyMotorBusy(){
@@ -128,7 +127,7 @@ public class Drivetrain {
         return (int)((millis/(2 * Math.PI * wheelRadius)) * gearboxRatioTicks);
     }
 
-    private void setAllMotorsPower(double power){
+    private void setPowerForAllMotors(double power){
         frontLeft.setPower(power);
         frontRight.setPower(power);
         backLeft.setPower(power);
@@ -136,7 +135,33 @@ public class Drivetrain {
     }
 
     private void addToTargetPosition(DcMotor motor, int ticks){
+        //This method is used instead of setTargetPosition() because
+        //most of the time the robot will not return to the original
+        //position and it is overall more convenient.
         int currentReading = motor.getCurrentPosition();
         motor.setTargetPosition(currentReading + ticks);
+    }
+
+    public double getPowerFrom(Motors motor){
+        //This is just for the telemetry
+        switch (motor){
+            case FRONT_LEFT:
+                return frontLeft.getPower();
+            case FRONT_RIGHT:
+                return frontRight.getPower();
+            case BACK_LEFT:
+                return  backLeft.getPower();
+            case BACK_RIGHT:
+                return backRight.getPower();
+        }
+        return 999; //If the code ever returns this:
+                    //----------💀💀💀-----------------
+    }               //Something has gone terribly wrong
+
+    enum Motors{
+        FRONT_LEFT,
+        FRONT_RIGHT,
+        BACK_LEFT,
+        BACK_RIGHT
     }
 }

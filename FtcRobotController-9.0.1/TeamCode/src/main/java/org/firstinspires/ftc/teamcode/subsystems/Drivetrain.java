@@ -16,6 +16,7 @@ public class Drivetrain {
 
     private final double wheelRadius = 37.5;
     private final int gearboxRatioTicks = 560;
+    private final boolean isWaitingEnabled = false;
 
     /* The mechanum wheels are 75mm in diameter (37.5mm Radius)
      * The total ArcLength is ~235.619mm ( 2 * PI * 37.5)
@@ -63,6 +64,9 @@ public class Drivetrain {
         addToTargetPosition(frontRight, ticks);
         addToTargetPosition(backLeft, ticks);
         addToTargetPosition(backRight, ticks);
+
+        waitUntilDone();
+
     }
 
     public void strafe(double distance, double power){
@@ -73,6 +77,8 @@ public class Drivetrain {
         addToTargetPosition(frontRight, -ticks);
         addToTargetPosition(backLeft, ticks);
         addToTargetPosition(backRight, -ticks);
+
+        waitUntilDone();
     }
 
     public void turn(double angle, double power){
@@ -85,6 +91,8 @@ public class Drivetrain {
         addToTargetPosition(frontRight, ticks);
         addToTargetPosition(backLeft, -ticks);
         addToTargetPosition(backRight, -ticks);
+
+        waitUntilDone();
 
     }
     public void stopAndBrake(){
@@ -105,7 +113,6 @@ public class Drivetrain {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
     }
 
     public boolean isAnyMotorBusy(){
@@ -116,9 +123,15 @@ public class Drivetrain {
         return false;
     }
 
+    private void waitUntilDone(){
+        if(isWaitingEnabled){
+            while(isAnyMotorBusy()){
+                //Does nothing while any motor is busy
+            }
+        }
+    }
+
     private double ticksToMillis(int ticks) {
-        // I made this method but currently has no uses.
-        // It may come in handy later tho
         return ((double)ticks/gearboxRatioTicks) * (2 * Math.PI * wheelRadius);
     }
 
@@ -144,6 +157,7 @@ public class Drivetrain {
 
     public double getPowerFrom(Motors motor){
         //This is just for the telemetry
+        //I made it this way to keep the motors private
         switch (motor){
             case FRONT_LEFT:
                 return frontLeft.getPower();
@@ -154,8 +168,8 @@ public class Drivetrain {
             case BACK_RIGHT:
                 return backRight.getPower();
         }
-        return 999; //If the code ever returns this:
-                    //----------💀💀💀-----------------
+        return 999; //Bro, If the code ever returns this:
+                    //----------💀💀💀----------------
     }               //Something has gone terribly wrong
 
     enum Motors{

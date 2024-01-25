@@ -36,5 +36,7 @@ public class SunnyAutonomous extends LinearOpMode{
             drivetrain.stopAndBrake();
             break;
         }
+
+        telemetryClock.stop();
     }
 }

@@ -19,16 +19,13 @@ public class SunnyAutonomous extends LinearOpMode{
         drivetrain = new Drivetrain(hardwareMap);
         drivetrain.stopAndBrake();
 
-        //Experimental -->
         telemetryClock = new TelemetryClock(this.telemetry, this.drivetrain);
         telemetryThread = new Thread(telemetryClock);
-        telemetryThread.start();
-        //Experimental <--
-
-        telemetry.addData("Status: ", "Everything Ok");
-        telemetry.update();
 
         waitForStart();
+
+        telemetryThread.start();
+        drivetrain.init();
 
         while(opModeIsActive()){
             drivetrain.drive(1000, 0.5);

@@ -38,6 +38,7 @@ public class TelemetryClock implements Runnable{
             try{
                 Thread.sleep(updateInterval);
             } catch (InterruptedException e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
